@@ -6,7 +6,7 @@ Box Box Box - F1 Race Simulator Template (Python)
 import json
 import sys
 
-v = [-2.71, 2.09, 0.002, 0.00071, 0.000298, 4.84, 6.81, 5.87]
+"""v = [-2.71, 2.09, 0.002, 0.00071, 0.000298, 4.84, 6.81, 5.87]
 
 PARAMS = {
     'compound_offset': {
@@ -29,16 +29,29 @@ PARAMS = {
         'MEDIUM': v[6],
         'HARD':   v[7],
     }
+}"""
+
+PARAMS = {
+    'compound_offset': {'SOFT': -3.0, 'MEDIUM': 0.0, 'HARD': 2.34},
+    'deg_rate':        {'SOFT': 0.276, 'MEDIUM': 0.11, 'HARD': 0.030},
+    'deg_exp':         2.5,
+    'deg_threshold':   {'SOFT': 8, 'MEDIUM': 19, 'HARD': 28},
+    'temp_scale':      0.025,
+    'temp_ref':        29.0,
 }
+
 
 def calc_lap_time(base, tire, tire_age, temp, params):
     offset    = params['compound_offset'][tire]
     threshold = params['deg_threshold'][tire]
     rate      = params['deg_rate'][tire]
-    
-    effective_age = max(0, tire_age - threshold)
-    degradation   = rate * effective_age * temp   # linear age, raw temp multiplier
-    
+    ts        = params['temp_scale']
+    tref      = params['temp_ref']
+
+    t_mult        = 1.0 + ts * (temp - tref)
+    effective_age = max(0.0, tire_age - threshold)
+    degradation   = rate * (effective_age ** params['deg_exp']) * t_mult
+
     return base + offset + degradation
 
 
